@@ -20,6 +20,7 @@ package eu.fasten.javacgdyn;
 
 import eu.fasten.javacgdyn.data.CallGraph;
 import eu.fasten.javacgdyn.data.Method;
+import eu.fasten.javacgdyn.utils.JSONUtil;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,7 +34,6 @@ import java.util.Stack;
 public class MethodStack {
 
     private static final Stack<Method> stack = new Stack<>();
-    private static final StringBuilder cg = new StringBuilder();
     private static final CallGraph callGraph = new CallGraph();
 
     public static void push(final String serializedMethod) {
@@ -44,11 +44,9 @@ public class MethodStack {
     public static void pop() {
         var target = stack.pop();
         if (!stack.isEmpty()) {
-            cg.append(stack.peek()).append(" -> ").append(target).append("\n");
             callGraph.addCall(stack.peek(), target);
         } else {
-            System.out.println(callGraph.getNodesCount());
-            System.out.println(cg.toString());
+            System.out.println(JSONUtil.toJSONString(callGraph));
         }
     }
 
