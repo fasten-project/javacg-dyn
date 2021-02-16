@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.regex.Pattern;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -39,16 +38,8 @@ public class Transformer implements ClassFileTransformer {
         String name = className.replace("/", ".");
         ClassPool pool = ClassPool.getDefault();
 
-        var excl = Set.of(
-                "^java.*", "^jdk.*", "^sun.*", "^com.sun.*",
-                "^eu.fasten.javacgdyn.*", "^org.xml.sax.*",
-                "^org.apache.maven.surefire.*", "^org.apache.tools.*", "^org.mockito.*",
-                "^org.easymock.internal.*",
-                "^org.junit.*", "^junit.framework.*", "^org.hamcrest.*", "^org.objenesis.*",
-                "^edu.washington.cs.mut.testrunner.Formatter"
-        );
-
-        var pattern = Pattern.compile(String.join("|", excl));
+        var pattern = Pattern.compile(String.join("|",
+                Profiler.config.getProperty("excl").split(",")));
 
         if (!pattern.matcher(name).matches()) {
             try {
