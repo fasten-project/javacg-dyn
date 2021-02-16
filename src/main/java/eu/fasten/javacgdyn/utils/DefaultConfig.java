@@ -1,0 +1,20 @@
+package eu.fasten.javacgdyn.utils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class DefaultConfig {
+
+    public static final String exclusions = "^java.*,^jdk.*,^sun.*,^com.sun.*,^eu.fasten.javacgdyn.*," +
+            "^org.xml.sax.*,^org.apache.maven.surefire.*,^org.apache.tools.*,^org.mockito.*," +
+            "^org.easymock.internal.*,^org.junit.*,^junit.framework.*,^org.hamcrest.*,^org.objenesis.*,";
+
+    public static final String output = "./javacg-dyn.json";
+
+    public static Map<String, String> create() {
+        var map = new HashMap<String, String>();
+        map.put("excl", exclusions);
+        map.put("output", output);
+        return map;
+    }
+}

@@ -18,11 +18,38 @@
 
 package eu.fasten.javacgdyn;
 
+import eu.fasten.javacgdyn.data.CallGraph;
+import eu.fasten.javacgdyn.utils.Config;
+import eu.fasten.javacgdyn.utils.JSONUtil;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.nio.charset.StandardCharsets;
 
 public class Profiler {
 
-    public static void premain(String agentArgs, Instrumentation inst) {
+    public static final CallGraph callGraph = new CallGraph();
+    public static Config config;
+
+    private static FileOutputStream fileWriter;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+        {
+            try {
+                fileWriter.write(JSONUtil.toJSONString(callGraph).getBytes(StandardCharsets.UTF_8));
+                fileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
+    }
+
+    public static void premain(String agentArgs, Instrumentation inst) throws IOException {
+        config = new Config(agentArgs);
+
+        fileWriter = new FileOutputStream(config.getProperty("output"));
+
         var transformer = new Transformer();
         inst.addTransformer(transformer);
     }
