@@ -18,14 +18,19 @@
 
 package eu.fasten.javacgdyn;
 
+import eu.fasten.javacgdyn.data.Method;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtBehavior;
+import javassist.CtClass;
+import javassist.NotFoundException;
 
 public class Transformer implements ClassFileTransformer {
 
@@ -36,7 +41,7 @@ public class Transformer implements ClassFileTransformer {
 
         var excl = Set.of(
                 "^java.*", "^jdk.*", "^sun.*", "^com.sun.*",
-                "^eu.fasten.javacgdyn.MethodStack$", "^eu.fasten.javacgdyn.Transformer$", "^org.xml.sax.*",
+                "^eu.fasten.javacgdyn.*", "^org.xml.sax.*",
                 "^org.apache.maven.surefire.*", "^org.apache.tools.*", "^org.mockito.*",
                 "^org.easymock.internal.*",
                 "^org.junit.*", "^junit.framework.*", "^org.hamcrest.*", "^org.objenesis.*",
@@ -64,8 +69,9 @@ public class Transformer implements ClassFileTransformer {
         return classfileBuffer;
     }
 
-    private void transformMethod(final String className, final CtBehavior method, final int length) throws CannotCompileException {
+    private void transformMethod(final String className, final CtBehavior method, final int length) throws CannotCompileException, NotFoundException, IOException {
         var name = className.substring(className.lastIndexOf('.') + 1);
+        var packageName = className.substring(0, className.lastIndexOf('.'));
         var methodName = method.getName();
         var signature = method.getSignature();
 
@@ -83,15 +89,14 @@ public class Transformer implements ClassFileTransformer {
             end = Math.max(line, end);
         }
 
-        System.out.println("METHOD: " + methodName + " Start: " + start + " End: " + end);
+        var parameters = Arrays.stream(method.getParameterTypes())
+                .map(CtClass::getName)
+                .toArray(String[]::new);
 
-        var command = "eu.fasten.javacgdyn.MethodStack.push(\"" +
-                className +
-                "\",\"" +
-                methodName +
-                "\",\"" +
-                signature +
-                "\");";
+        var returnType = signature.substring(signature.indexOf(")") + 1);
+
+        var m = new Method(packageName, name, methodName, parameters, returnType, start, end);
+        var command = "eu.fasten.javacgdyn.MethodStack.push(\"" + MethodStack.serialize(m) + "\");";
         method.insertBefore(command);
         method.insertAfter("eu.fasten.javacgdyn.MethodStack.pop();");
     }
