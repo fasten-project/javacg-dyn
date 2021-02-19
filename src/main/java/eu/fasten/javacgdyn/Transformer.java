@@ -29,6 +29,7 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
+import javassist.CtMethod;
 import javassist.NotFoundException;
 
 public class Transformer implements ClassFileTransformer {
@@ -64,9 +65,8 @@ public class Transformer implements ClassFileTransformer {
         var name = className.substring(className.lastIndexOf('.') + 1);
         var packageName = className.substring(0, className.lastIndexOf('.'));
         var methodName = method.getName();
-        var signature = method.getSignature();
 
-        if (method.getName().equals(name))
+        if (method.getMethodInfo().isConstructor())
             methodName = "<init>";
 
         int start = method.getMethodInfo().getLineNumber(0);
@@ -84,7 +84,9 @@ public class Transformer implements ClassFileTransformer {
                 .map(CtClass::getName)
                 .toArray(String[]::new);
 
-        var returnType = signature.substring(signature.indexOf(")") + 1);
+        var returnType = method.getMethodInfo().isMethod()
+                ? ((CtMethod) method).getReturnType().getName()
+                : "void";
 
         var m = new Method(packageName, name, methodName, parameters, returnType, start, end);
         var command = "eu.fasten.javacgdyn.MethodStack.push(\"" + MethodStack.serialize(m) + "\");";
