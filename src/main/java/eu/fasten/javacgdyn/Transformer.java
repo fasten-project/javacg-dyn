@@ -53,7 +53,7 @@ public class Transformer implements ClassFileTransformer {
                     clazz.detach();
                     return clazz.toBytecode();
                 }
-            } catch (Exception e) {
+            } catch (IOException | CannotCompileException | NotFoundException e) {
                 e.printStackTrace();
             }
         }
