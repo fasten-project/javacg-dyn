@@ -29,11 +29,13 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Base64;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class MethodStack {
 
     private static final Stack<Method> stack = new Stack<>();
+    public static Pattern rootProject;
 
     public static void push(final String serializedMethod) {
         var method = deserialize(serializedMethod);
@@ -42,7 +44,7 @@ public class MethodStack {
 
     public static void pop() {
         var target = stack.pop();
-        if (!stack.isEmpty()) {
+        if (!stack.isEmpty() && (rootProject.matcher(stack.peek().toString()).matches())) {
             callGraph.addCall(stack.peek(), target);
         }
     }

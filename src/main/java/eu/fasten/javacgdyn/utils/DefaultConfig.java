@@ -11,10 +11,13 @@ public class DefaultConfig {
 
     public static final String output = "./javacg-dyn.json";
 
+    public static final String rootProject = ".*";
+
     public static Map<String, String> create() {
         var map = new HashMap<String, String>();
         map.put("excl", exclusions);
         map.put("output", output);
+        map.put("root-project", rootProject);
         return map;
     }
 }

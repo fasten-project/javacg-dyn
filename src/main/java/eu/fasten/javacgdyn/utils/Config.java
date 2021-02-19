@@ -1,6 +1,7 @@
 package eu.fasten.javacgdyn.utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -28,7 +29,7 @@ public class Config {
                     this.config.put(keyValue[0].trim(), keyValue[1].trim());
                 }
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | FileNotFoundException e) {
             logger.log(Level.WARNING, "Error while reading config: " + e.getMessage() + ". " +
                     "Using default config instead.");
             this.config = DefaultConfig.create();
@@ -36,6 +37,6 @@ public class Config {
     }
 
     public String getProperty(final String key) {
-        return this.config.getOrDefault(key, "");
+        return this.config.getOrDefault(key, null);
     }
 }

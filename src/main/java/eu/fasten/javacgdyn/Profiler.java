@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 public class Profiler {
 
@@ -49,6 +50,9 @@ public class Profiler {
         config = new Config(agentArgs);
 
         fileWriter = new FileOutputStream(config.getProperty("output"));
+
+        var root = config.getProperty("root-project");
+        MethodStack.rootProject = Pattern.compile(root);
 
         var transformer = new Transformer();
         inst.addTransformer(transformer);
