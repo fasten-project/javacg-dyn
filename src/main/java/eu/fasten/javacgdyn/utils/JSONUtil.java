@@ -93,7 +93,7 @@ public class JSONUtil {
      * @param result the StringBuilder to append information.
      */
     private static void appendCha(StringBuilder result, final ClassHierarchy cha) {
-        result.append("\"cha\":{");
+        result.append("\"nodes\":{");
         for (final var entry : cha.getTypes()) {
             appendType(result, entry);
         }
