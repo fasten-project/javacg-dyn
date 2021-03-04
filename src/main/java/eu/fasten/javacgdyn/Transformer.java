@@ -47,9 +47,7 @@ public class Transformer implements ClassFileTransformer {
                 var clazz = pool.makeClass(new ByteArrayInputStream(classfileBuffer));
                 if (!clazz.isInterface()) {
                     for (var method : clazz.getDeclaredBehaviors()) {
-                        if (!method.isEmpty()) {
-                            transformMethod(clazz.getName(), method, classfileBuffer.length);
-                        }
+                        transformMethod(clazz.getName(), method, classfileBuffer.length);
                     }
                     clazz.detach();
                     return clazz.toBytecode();
@@ -89,8 +87,11 @@ public class Transformer implements ClassFileTransformer {
                 : "void";
 
         var m = new Method(packageName, name, methodName, parameters, returnType, start, end);
-        var command = "eu.fasten.javacgdyn.MethodStack.push(\"" + MethodStack.serialize(m) + "\");";
-        method.insertBefore(command);
-        method.insertAfter("eu.fasten.javacgdyn.MethodStack.pop();");
+
+        var pushCommand = "eu.fasten.javacgdyn.MethodStack.push(\"" + MethodStack.serialize(m) + "\");";
+        var popCommand = "eu.fasten.javacgdyn.MethodStack.pop();";
+
+        method.insertBefore(pushCommand);
+        method.insertAfter(popCommand);
     }
 }

@@ -7,7 +7,8 @@ public class DefaultConfig {
 
     public static final String exclusions = "^java.*,^jdk.*,^sun.*,^com.sun.*,^eu.fasten.javacgdyn.*," +
             "^org.xml.sax.*,^org.apache.maven.surefire.*,^org.apache.tools.*,^org.mockito.*," +
-            "^org.easymock.internal.*,^org.junit.*,^junit.framework.*,^org.hamcrest.*,^org.objenesis.*,";
+            "^org.easymock.internal.*,^org.junit.*,^junit.framework.*,^org.hamcrest.*,^org.objenesis.*," +
+            "^org.apiguardian.api.*";
 
     public static final String output = "./javacg-dyn.json";
 
