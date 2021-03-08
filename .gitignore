@@ -94,3 +94,5 @@ cmake-build-*/
 *.iml
 *.ipr
 modules.xml
+
+!**/resources/*.jar
