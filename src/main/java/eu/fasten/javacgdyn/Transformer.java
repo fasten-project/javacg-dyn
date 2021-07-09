@@ -18,6 +18,7 @@
 
 package eu.fasten.javacgdyn;
 
+import eu.fasten.javacgdyn.data.FastenJavaURI;
 import eu.fasten.javacgdyn.data.Method;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -79,12 +80,15 @@ public class Transformer implements ClassFileTransformer {
         }
 
         var parameters = Arrays.stream(method.getParameterTypes())
-                .map(CtClass::getName)
-                .toArray(String[]::new);
-
-        var returnType = method.getMethodInfo().isMethod()
-                ? ((CtMethod) method).getReturnType().getName()
-                : "void";
+                .map(c -> FastenJavaURI.createWithoutFunction("/" + c.getPackageName() + "/" + c.getName()))
+                .toArray(FastenJavaURI[]::new);
+        FastenJavaURI returnType;
+        if (method.getMethodInfo().isMethod()) {
+            var rt = ((CtMethod) method).getReturnType();
+            returnType = FastenJavaURI.createWithoutFunction("/" + rt.getPackageName() + "/" + rt.getDeclaringClass().getName());
+        } else {
+            returnType = FastenJavaURI.createWithoutFunction("/" + "java.lang" + "/" + "VoidType");
+        }
 
         var m = new Method(packageName, name, methodName, parameters, returnType, start, end);
 

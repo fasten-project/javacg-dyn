@@ -27,14 +27,14 @@ public class Method implements Serializable {
     private final String packageName;
     private final String className;
     private final String name;
-    private final String[] parameters;
-    private final String returnType;
+    private final FastenJavaURI[] parameters;
+    private final FastenJavaURI returnType;
 
     private final int startLine;
     private final int endLine;
 
     public Method(final String packageName, final String className, final String name,
-                  final String[] parameters, final String returnType,
+                  final FastenJavaURI[] parameters, final FastenJavaURI returnType,
                   final int startLine, final int endLine) {
         this.packageName = packageName;
         this.className = className;
@@ -63,11 +63,11 @@ public class Method implements Serializable {
     }
 
     public String[] getParameters() {
-        return parameters;
+        return Arrays.stream(parameters).map(FastenURI::toString).toArray(String[]::new);
     }
 
     public String getReturnType() {
-        return returnType;
+        return returnType.toString();
     }
 
     public int getStartLine() {
@@ -78,12 +78,22 @@ public class Method implements Serializable {
         return endLine;
     }
 
+    public FastenURI toFastenURI() {
+        final var javaURIRaw = FastenJavaURI.create(null, null, null,
+                packageName, className, name, parameters, returnType);
+        final var javaURI = javaURIRaw.canonicalize();
+
+        return FastenURI.createSchemeless(javaURI.getRawForge(), javaURI.getRawProduct(),
+                javaURI.getRawVersion(),
+                javaURI.getRawNamespace(), javaURI.getRawEntity());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Method method = (Method) o;
-        return this.toString().equals(o.toString());
+        return this.toString().equals(method.toString());
     }
 
     @Override
@@ -95,8 +105,6 @@ public class Method implements Serializable {
 
     @Override
     public String toString() {
-        return this.packageName + "/" + this.className + "." + this.name +
-                "(" + String.join(",", this.parameters) + ")" +
-                this.returnType;
+        return this.toFastenURI().toString();
     }
 }
