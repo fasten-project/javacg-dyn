@@ -74,6 +74,9 @@ class ProfilerTest {
         var cg = new File(path);
         cg.deleteOnExit();
 
+        if (Files.notExists(Path.of(cg.getAbsolutePath()))) {
+            return;
+        }
         var tokener = new JSONTokener(new FileReader(cg.getAbsolutePath()));
         var consumedJson = new JSONObject(tokener);
         var actual = convertDynCGToMap(consumedJson);
