@@ -18,12 +18,8 @@
 
 package eu.fasten.javacgdyn.utils;
 
-import eu.fasten.javacgdyn.data.Call;
-import eu.fasten.javacgdyn.data.CallGraph;
-import eu.fasten.javacgdyn.data.ClassHierarchy;
-import eu.fasten.javacgdyn.data.Graph;
-import eu.fasten.javacgdyn.data.Method;
-import eu.fasten.javacgdyn.data.Type;
+import eu.fasten.javacgdyn.data.*;
+import java.util.Arrays;
 import java.util.Map;
 
 public class JSONUtil {
@@ -122,10 +118,73 @@ public class JSONUtil {
      */
     private static void appendMethods(StringBuilder result, final Map<Integer, Method> methods) {
         for (final var entry : methods.entrySet()) {
-            appendKeyValue(result, entry.getKey().toString(), entry.getValue().toString());
+            appendKeyValue(result, entry.getKey().toString(), methodToFastenURI(entry.getValue()).toString());
         }
         removeLastIfNotEmpty(result, methods.size());
         result.append("}");
+    }
+
+    private static String transformPrimitiveType(String type) {
+        switch (type) {
+            case "boolean":
+                return "java.lang.BooleanType";
+            case "byte":
+                return "java.lang.ByteType";
+            case "short":
+                return "java.lang.ShortType";
+            case "int":
+                return "java.lang.IntegerType";
+            case "long":
+                return "java.lang.LongType";
+            case "float":
+                return "java.lang.FloatType";
+            case "double":
+                return "java.lang.DoubleType";
+            case "char":
+                return "java.lang.CharType";
+            case "boolean[]":
+                return "java.lang.BooleanType[]";
+            case "byte[]":
+                return "java.lang.ByteType[]";
+            case "short[]":
+                return "java.lang.ShortType[]";
+            case "int[]":
+                return "java.lang.IntegerType[]";
+            case "long[]":
+                return "java.lang.LongType[]";
+            case "float[]":
+                return "java.lang.FloatType[]";
+            case "double[]":
+                return "java.lang.DoubleType[]";
+            case "char[]":
+                return "java.lang.CharType[]";
+            case "void":
+                return "java.lang.VoidType";
+            default:
+                return type;
+        }
+    }
+
+    private static String transformToFastenUriFormat(String type) {
+        type = transformPrimitiveType(type);
+        var strBuilder = new StringBuilder(type);
+        if (type.lastIndexOf(".") >= 0) {
+            strBuilder.replace(type.lastIndexOf("."), type.lastIndexOf(".") + 1, "/");
+        }
+        return "/" + strBuilder;
+    }
+
+    public static FastenURI methodToFastenURI(Method method) {
+        var parameters = Arrays.stream(method.getParameters())
+                .map(p -> FastenJavaURI.createWithoutFunction(transformToFastenUriFormat(p)))
+                .toArray(FastenJavaURI[]::new);
+        var returnType = FastenJavaURI.createWithoutFunction(transformToFastenUriFormat(method.getReturnType()));
+        final var javaURIRaw = FastenJavaURI.create(null, null, null,
+                method.getPackageName(), method.getClassName(), method.getName(), parameters, returnType);
+        final var javaURI = javaURIRaw.canonicalize();
+        return FastenURI.createSchemeless(javaURI.getRawForge(), javaURI.getRawProduct(),
+                javaURI.getRawVersion(),
+                javaURI.getRawNamespace(), javaURI.getRawEntity());
     }
 
     /**

@@ -32,13 +32,11 @@ class CallGraphTest {
         callgraph = new CallGraph();
 
         var source = new Method("package.name", "Class", "method1",
-                new FastenJavaURI[]{FastenJavaURI.createWithoutFunction("/" + "java.lang" + "/" + "int"),
-                        FastenJavaURI.createWithoutFunction("/" + "java.lang" + "/" + "boolean")},
-                FastenJavaURI.createWithoutFunction("/" + "java.lang" + "/" + "V"), 1, 5);
+                new String[]{"int", "boolean"}, "V", 1, 5);
         var target = new Method("different.name", "Target", "callee",
-                new FastenJavaURI[]{}, FastenJavaURI.createWithoutFunction("/" + "java.lang" + "/" + "int"), 6, 7);
+                new String[]{}, "int", 6, 7);
         var target2 = new Method("different.name", "Target", "callee2",
-                new FastenJavaURI[]{}, FastenJavaURI.createWithoutFunction("/" + "java.lang" + "/" + "boolean"), 8, 17);
+                new String[]{}, "boolean", 8, 17);
         callgraph.addCall(source, target);
         callgraph.addCall(source, target2);
         callgraph.addCall(source, target2);

@@ -27,14 +27,14 @@ public class Method implements Serializable {
     private final String packageName;
     private final String className;
     private final String name;
-    private final FastenJavaURI[] parameters;
-    private final FastenJavaURI returnType;
+    private final String[] parameters;
+    private final String returnType;
 
     private final int startLine;
     private final int endLine;
 
     public Method(final String packageName, final String className, final String name,
-                  final FastenJavaURI[] parameters, final FastenJavaURI returnType,
+                  final String[] parameters, final String returnType,
                   final int startLine, final int endLine) {
         this.packageName = packageName;
         this.className = className;
@@ -63,11 +63,11 @@ public class Method implements Serializable {
     }
 
     public String[] getParameters() {
-        return Arrays.stream(parameters).map(FastenURI::toString).toArray(String[]::new);
+        return this.parameters.clone();
     }
 
     public String getReturnType() {
-        return returnType.toString();
+        return returnType;
     }
 
     public int getStartLine() {
@@ -76,16 +76,6 @@ public class Method implements Serializable {
 
     public int getEndLine() {
         return endLine;
-    }
-
-    public FastenURI toFastenURI() {
-        final var javaURIRaw = FastenJavaURI.create(null, null, null,
-                packageName, className, name, parameters, returnType);
-        final var javaURI = javaURIRaw.canonicalize();
-
-        return FastenURI.createSchemeless(javaURI.getRawForge(), javaURI.getRawProduct(),
-                javaURI.getRawVersion(),
-                javaURI.getRawNamespace(), javaURI.getRawEntity());
     }
 
     @Override
@@ -105,6 +95,8 @@ public class Method implements Serializable {
 
     @Override
     public String toString() {
-        return this.toFastenURI().toString();
+        return this.packageName + "/" + this.className + "." + this.name +
+                "(" + String.join(",", this.parameters) + ")" +
+                this.returnType;
     }
 }
