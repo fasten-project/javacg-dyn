@@ -22,9 +22,12 @@ import eu.fasten.javacgdyn.data.Method;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
+import java.net.URL;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+import eu.fasten.javacgdyn.utils.MavenUtils;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtBehavior;
@@ -47,7 +50,7 @@ public class Transformer implements ClassFileTransformer {
                 var clazz = pool.makeClass(new ByteArrayInputStream(classfileBuffer));
                 if (!clazz.isInterface()) {
                     for (var method : clazz.getDeclaredBehaviors()) {
-                        transformMethod(clazz.getName(), method, classfileBuffer.length);
+                        transformMethod(clazz.getName(), method, classfileBuffer.length, clazz.getURL().toString());
                     }
                     clazz.detach();
                     return clazz.toBytecode();
@@ -59,7 +62,36 @@ public class Transformer implements ClassFileTransformer {
         return classfileBuffer;
     }
 
-    private void transformMethod(final String className, final CtBehavior method, final int length) throws CannotCompileException, NotFoundException, IOException {
+    private void transformMethod(final String className, final CtBehavior method, final int length, final String classUrl) throws CannotCompileException, NotFoundException, IOException {
+
+        String product = null;
+        String version = null;
+        if (classUrl.startsWith("jar:file:")) {
+            var path = new URL(classUrl).getPath();
+            var parts = path.split("/");
+            int c = 0;
+            while (!parts[c].equals("repository")) {
+                c++;
+            }
+            product = parts[c + 1] + ":" + parts[c + 2];
+            version = parts[c + 3];
+        } else if (classUrl.startsWith("file:")) {
+            var path = new URL(classUrl).getPath();
+            var parts = path.split("/");
+            int c = 0;
+            while (!parts[c].equals("target")) {
+                c++;
+            }
+            var builder = new StringBuilder();
+            for (int i = 0; i < c; i++) {
+                builder.append("/").append(parts[i]);
+            }
+            var coordinate = MavenUtils.extractMavenCoordinate(Path.of(builder.toString()));
+            if (coordinate != null) {
+                product = coordinate.split(":")[0] + ":" + coordinate.split(":")[1];
+                version = coordinate.split(":")[3];
+            }
+        }
         var name = className.substring(className.lastIndexOf('.') + 1);
         var packageName = className.substring(0, className.lastIndexOf('.'));
         var methodName = method.getName();
@@ -86,7 +118,7 @@ public class Transformer implements ClassFileTransformer {
                 ? ((CtMethod) method).getReturnType().getName()
                 : "void";
 
-        var m = new Method(packageName, name, methodName, parameters, returnType, start, end);
+        var m = new Method(product, version, packageName, name, methodName, parameters, returnType, start, end);
         var pushCommand = "eu.fasten.javacgdyn.MethodStack.push(\"" + MethodStack.serialize(m) + "\");";
         var popCommand = "eu.fasten.javacgdyn.MethodStack.pop();";
         method.insertBefore(pushCommand);

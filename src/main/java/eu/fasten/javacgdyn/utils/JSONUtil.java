@@ -118,7 +118,7 @@ public class JSONUtil {
      */
     private static void appendMethods(StringBuilder result, final Map<Integer, Method> methods) {
         for (final var entry : methods.entrySet()) {
-            appendKeyValue(result, entry.getKey().toString(), methodToFastenURI(entry.getValue()).toString());
+            appendKeyValue(result, entry.getKey().toString(), "fasten:" + methodToFastenURI(entry.getValue()));
         }
         removeLastIfNotEmpty(result, methods.size());
         result.append("}");
@@ -179,7 +179,7 @@ public class JSONUtil {
                 .map(p -> FastenJavaURI.createWithoutFunction(transformToFastenUriFormat(p)))
                 .toArray(FastenJavaURI[]::new);
         var returnType = FastenJavaURI.createWithoutFunction(transformToFastenUriFormat(method.getReturnType()));
-        final var javaURIRaw = FastenJavaURI.create(null, null, null,
+        final var javaURIRaw = FastenJavaURI.create("mvn", method.getProduct(), method.getVersion(),
                 method.getPackageName(), method.getClassName(), method.getName(), parameters, returnType);
         final var javaURI = javaURIRaw.canonicalize();
         return FastenURI.createSchemeless(javaURI.getRawForge(), javaURI.getRawProduct(),

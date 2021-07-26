@@ -24,6 +24,8 @@ import java.util.Objects;
 
 public class Method implements Serializable {
 
+    private final String product;
+    private final String version;
     private final String packageName;
     private final String className;
     private final String name;
@@ -33,9 +35,11 @@ public class Method implements Serializable {
     private final int startLine;
     private final int endLine;
 
-    public Method(final String packageName, final String className, final String name,
+    public Method(final String product, final String version, final String packageName, final String className, final String name,
                   final String[] parameters, final String returnType,
                   final int startLine, final int endLine) {
+        this.product = product;
+        this.version = version;
         this.packageName = packageName;
         this.className = className;
         this.name = name;
@@ -44,6 +48,14 @@ public class Method implements Serializable {
 
         this.startLine = startLine;
         this.endLine = endLine;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public String getType() {
@@ -83,20 +95,39 @@ public class Method implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Method method = (Method) o;
-        return this.toString().equals(method.toString());
+        if (startLine != method.startLine) return false;
+        if (endLine != method.endLine) return false;
+        if (!Objects.equals(product, method.product))
+            return false;
+        if (!Objects.equals(version, method.version))
+            return false;
+        if (!Objects.equals(packageName, method.packageName))
+            return false;
+        if (!Objects.equals(className, method.className))
+            return false;
+        if (!Objects.equals(name, method.name)) return false;
+        if (!Arrays.equals(parameters, method.parameters)) return false;
+        return Objects.equals(returnType, method.returnType);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(packageName, className, name, returnType, startLine, endLine);
+        int result = product != null ? product.hashCode() : 0;
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
+        result = 31 * result + (className != null ? className.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(parameters);
+        result = 31 * result + (returnType != null ? returnType.hashCode() : 0);
+        result = 31 * result + startLine;
+        result = 31 * result + endLine;
         return result;
     }
 
     @Override
     public String toString() {
-        return this.packageName + "/" + this.className + "." + this.name +
-                "(" + String.join(",", this.parameters) + ")" +
+        return this.product + "@" + this.version + "/" + this.packageName + "/" + this.className
+                + "." + this.name + "(" + String.join(",", this.parameters) + ")" +
                 this.returnType;
     }
 }
