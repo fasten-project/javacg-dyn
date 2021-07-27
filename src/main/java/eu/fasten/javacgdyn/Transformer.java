@@ -89,7 +89,7 @@ public class Transformer implements ClassFileTransformer {
             var coordinate = MavenUtils.extractMavenCoordinate(Path.of(builder.toString()));
             if (coordinate != null) {
                 product = coordinate.split(":")[0] + ":" + coordinate.split(":")[1];
-                version = coordinate.split(":")[3];
+                version = coordinate.split(":")[2];
             }
         }
         var name = className.substring(className.lastIndexOf('.') + 1);
