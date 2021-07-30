@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class MavenUtils {
 
@@ -19,9 +20,14 @@ public class MavenUtils {
     private static String extractMavenCoordinateFromPom(Path pomPath) {
         try {
             var pomContent = Files.readString(pomPath);
-            var artifactId = substringBetween(pomContent, "<artifactId>", "</artifactId>");
-            var groupId = substringBetween(pomContent, "<groupId>", "</groupId>");
-            var version = substringBetween(pomContent, "<version>", "</version>");
+            var groupId = substringBetween(pomContent, "<groupId>", "</groupId>", 0);
+            var start = 0;
+            var matcher = Pattern.compile("<parent>(.|\\n|\\r|\\t)*</parent>").matcher(pomContent);
+            if (matcher.find()) {
+                start = matcher.end();
+            }
+            var artifactId = substringBetween(pomContent, "<artifactId>", "</artifactId>", start);
+            var version = substringBetween(pomContent, "<version>", "</version>", 0);
             return groupId + ":" + artifactId + ":" + version;
         } catch (IOException e) {
             System.err.println("Error extracting Maven coordinate from POM file: " + e.getMessage());
@@ -29,7 +35,7 @@ public class MavenUtils {
         return null;
     }
 
-    private static String substringBetween(String str, String before, String after) {
-        return str.substring(str.indexOf(before) + before.length(), str.indexOf(after));
+    private static String substringBetween(String str, String before, String after, int start) {
+        return str.substring(str.indexOf(before, start) + before.length(), str.indexOf(after, start));
     }
 }
