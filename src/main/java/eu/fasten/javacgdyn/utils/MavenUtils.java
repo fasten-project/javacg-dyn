@@ -20,10 +20,11 @@ public class MavenUtils {
     private static String extractMavenCoordinateFromPom(Path pomPath) {
         try {
             var pomContent = Files.readString(pomPath);
+
             var groupId = substringBetween(pomContent, "<groupId>", "</groupId>", 0);
             var start = 0;
             var matcher = Pattern.compile("<parent>(.|\\n|\\r|\\t)*</parent>").matcher(pomContent);
-            if (matcher.find()) {
+            if (matcher.find() && matcher.start() < pomContent.indexOf("<artifactId>")) {
                 start = matcher.end();
             }
             var artifactId = substringBetween(pomContent, "<artifactId>", "</artifactId>", start);

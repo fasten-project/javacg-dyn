@@ -69,12 +69,22 @@ public class Transformer implements ClassFileTransformer {
         if (classUrl.startsWith("jar:file:")) {
             var path = new URL(classUrl).getPath();
             var parts = path.split("/");
-            int c = 0;
-            while (!parts[c].equals("repository")) {
-                c++;
+            int start = 0;
+            while (!parts[start].equals("repository")) {
+                start++;
             }
-            product = parts[c + 1] + ":" + parts[c + 2];
-            version = parts[c + 3];
+            start++;
+            var end = start + 1;
+            while (!parts[end].contains(".jar!")) {
+                end++;
+            }
+            end--;
+            version = parts[end];
+            product = "";
+            for (int i = start; i < end - 1; i++) {
+                product += parts[i] + ".";
+            }
+            product = product.substring(0, product.length() - 2) + ":" + parts[end - 1];
         } else if (classUrl.startsWith("file:")) {
             var path = new URL(classUrl).getPath();
             var parts = path.split("/");
