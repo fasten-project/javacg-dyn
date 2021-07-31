@@ -84,7 +84,7 @@ public class Transformer implements ClassFileTransformer {
             for (int i = start; i < end - 1; i++) {
                 product += parts[i] + ".";
             }
-            product = product.substring(0, product.length() - 2) + ":" + parts[end - 1];
+            product = product.substring(0, product.length() - 1) + ":" + parts[end - 1];
         } else if (classUrl.startsWith("file:")) {
             var path = new URL(classUrl).getPath();
             var parts = path.split("/");
